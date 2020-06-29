@@ -51,6 +51,8 @@ var (
 	}
 	validDebugCommands = map[string]bool{
 		"exec":         true,
+		"set":          true,
+		"run":          true,
 		"logs":         true,
 		"attach":       true,
 		"auth":         true,
