@@ -20,6 +20,7 @@
 package bot
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/infracloudio/botkube/pkg/config"
@@ -27,6 +28,8 @@ import (
 	"github.com/infracloudio/botkube/pkg/log"
 	"github.com/nlopes/slack"
 )
+
+var hyperlinkRegex = regexp.MustCompile(`(?m)<http:\/\/[a-z.0-9\/\-_=]*\|([a-z.0-9\/\-_=]*)>`)
 
 // SlackBot listens for user's message, execute commands and sends back the response
 type SlackBot struct {
@@ -153,6 +156,12 @@ func (sm *slackMessage) HandleMessage(b *SlackBot) {
 	sm.Request = strings.TrimPrefix(sm.Event.Text, "<@"+sm.BotID+"> ")
 	if len(sm.Request) == 0 {
 		return
+	}
+
+	// Convert urls formatted by Slack client back to string
+	matched := hyperlinkRegex.FindAllStringSubmatch(string(sm.Request), -1)
+	if len(matched) == 1 && len(matched[0]) == 2 {
+		sm.Request = strings.ReplaceAll(sm.Request, matched[0][0], matched[0][1])
 	}
 
 	e := execute.NewDefaultExecutor(sm.Request, b.AllowKubectl, b.RestrictAccess, b.DefaultNamespace,
