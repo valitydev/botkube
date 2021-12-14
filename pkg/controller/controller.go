@@ -20,6 +20,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -61,7 +62,7 @@ var startTime time.Time
 
 // RegisterInformers creates new informer controllers to watch k8s resources
 func RegisterInformers(c *config.Config, notifiers []notify.Notifier) {
-	sendMessage(c, notifiers, fmt.Sprintf(controllerStartMsg, c.Settings.ClusterName))
+	//sendMessage(c, notifiers, fmt.Sprintf(controllerStartMsg, c.Settings.ClusterName))
 	startTime = time.Now()
 
 	// Start config file watcher if enabled
@@ -86,11 +87,30 @@ func RegisterInformers(c *config.Config, notifiers []notify.Notifier) {
 	log.Infof("Registering kubernetes events informer for types: %+v", config.NormalEvent.String())
 	utils.DynamicKubeInformerFactory.ForResource(eventGVR).Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
+			fmt.Println("Handling ADDED event")
 			var eventObj coreV1.Event
 			err := utils.TransformIntoTypedObject(obj.(*unstructured.Unstructured), &eventObj)
 			if err != nil {
 				log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(obj), reflect.TypeOf(eventObj))
 			}
+			// Skip older events
+			if !eventObj.CreationTimestamp.Time.IsZero() {
+				if eventObj.CreationTimestamp.Time.Before(startTime) {
+					log.Info("Skipping older events")
+					return
+				}
+			}
+			if c.Communications.ElasticSearch.EventsSink {
+				eventJSON, err := json.Marshal(notify.SinkEvent{Verb: "ADDED", Event: eventObj})
+				if err != nil {
+					log.Error(err)
+					return
+				}
+				log.Info(string(eventJSON))
+				sendMessage(c, notifiers, string(eventJSON))
+				return
+			}
+
 			_, err = cache.MetaNamespaceKeyFunc(obj)
 			if err != nil {
 				log.Errorf("Failed to get MetaNamespaceKey from event resource")
@@ -111,6 +131,25 @@ func RegisterInformers(c *config.Config, notifiers []notify.Notifier) {
 				// Send NormalEvent as Insignificant InfoEvent
 				sendEvent(obj, nil, c, notifiers, utils.GVRToString(gvr), config.InfoEvent)
 			}
+
+		},
+		UpdateFunc: func(old, new interface{}) {
+			fmt.Println("Handling UPDATED event")
+			var eventObj coreV1.Event
+			err := utils.TransformIntoTypedObject(new.(*unstructured.Unstructured), &eventObj)
+			if err != nil {
+				log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(new), reflect.TypeOf(eventObj))
+			}
+			if c.Communications.ElasticSearch.EventsSink {
+				eventJSON, err := json.Marshal(notify.SinkEvent{Verb: "UPDATED", Event: eventObj})
+				if err != nil {
+					log.Error(err)
+					return
+				}
+				log.Info(string(eventJSON))
+				sendMessage(c, notifiers, string(eventJSON))
+				return
+			}
 		},
 	})
 	stopCh := make(chan struct{})
@@ -122,7 +161,7 @@ func RegisterInformers(c *config.Config, notifiers []notify.Notifier) {
 	signal.Notify(sigterm, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGSTOP)
 
 	<-sigterm
-	sendMessage(c, notifiers, fmt.Sprintf(controllerStopMsg, c.Settings.ClusterName))
+	//sendMessage(c, notifiers, fmt.Sprintf(controllerStopMsg, c.Settings.ClusterName))
 	// Sleep for some time to send termination notification
 	time.Sleep(5 * time.Second)
 }

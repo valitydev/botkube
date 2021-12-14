@@ -22,6 +22,7 @@ package notify
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -32,11 +33,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/olivere/elastic"
+	"github.com/sha1sum/aws_signing_client"
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/infracloudio/botkube/pkg/config"
 	"github.com/infracloudio/botkube/pkg/events"
 	"github.com/infracloudio/botkube/pkg/log"
-	"github.com/olivere/elastic"
-	"github.com/sha1sum/aws_signing_client"
 )
 
 const (
@@ -48,6 +51,8 @@ const (
 	awsRoleARNEnvName = "AWS_ROLE_ARN"
 	// The token file mount path in POD env variable while using IAM Role for service account
 	awsWebIDTokenFileEnvName = "AWS_WEB_IDENTITY_TOKEN_FILE"
+
+	raw = "raw"
 )
 
 // ElasticSearch contains auth cred and index setting
@@ -59,6 +64,11 @@ type ElasticSearch struct {
 	Shards        int
 	Replicas      int
 	Type          string
+}
+
+type SinkEvent struct {
+	Verb  string
+	Event corev1.Event
 }
 
 // NewElasticSearch returns new ElasticSearch object
@@ -140,9 +150,7 @@ type index struct {
 	Replicas int `json:"number_of_replicas"`
 }
 
-func (e *ElasticSearch) flushIndex(ctx context.Context, event interface{}) error {
-	// Construct the ELS Index Name with timestamp suffix
-	indexName := e.Index + "-" + time.Now().Format(indexSuffixFormat)
+func (e *ElasticSearch) flushIndex(ctx context.Context, indexName string, event interface{}) error {
 	// Create index if not exists
 	exists, err := e.ELSClient.IndexExists(indexName).Do(ctx)
 	if err != nil {
@@ -167,6 +175,7 @@ func (e *ElasticSearch) flushIndex(ctx context.Context, event interface{}) error
 	}
 
 	// Send event to els
+	fmt.Printf("%#v\n", event)
 	_, err = e.ELSClient.Index().Index(indexName).Type(e.Type).BodyJson(event).Do(ctx)
 	if err != nil {
 		log.Error(fmt.Sprintf("Failed to post data to els. Error:%s", err.Error()))
@@ -186,14 +195,22 @@ func (e *ElasticSearch) SendEvent(event events.Event) (err error) {
 	log.Debug(fmt.Sprintf(">> Sending to ElasticSearch: %+v", event))
 	ctx := context.Background()
 
+	// Construct the ELS Index Name with timestamp suffix
+	indexName := e.Index + "-" + time.Now().Format(indexSuffixFormat)
 	// Create index if not exists
-	if err := e.flushIndex(ctx, event); err != nil {
-		return err
-	}
-	return nil
+	return e.flushIndex(ctx, indexName, event)
 }
 
 // SendMessage sends message to slack channel
 func (e *ElasticSearch) SendMessage(msg string) error {
-	return nil
+	ctx := context.Background()
+	var sinkEvent SinkEvent
+	err := json.Unmarshal([]byte(msg), &sinkEvent)
+	if err != nil {
+		return err
+	}
+	// Construct the ELS Index Name with timestamp suffix for non BotKube Events
+	indexName := raw + "-" + e.Index + "-" + time.Now().Format(indexSuffixFormat)
+	// Create index if not exists
+	return e.flushIndex(ctx, indexName, sinkEvent)
 }

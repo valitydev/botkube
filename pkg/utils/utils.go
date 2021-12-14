@@ -76,6 +76,11 @@ var (
 
 const hyperlinkRegex = `(?m)<http:\/\/[a-z.0-9\/\-_=]*\|([a-z.0-9\/\-_=]*)>`
 
+const (
+	customQPS   = 1e6
+	customBurst = 1e6
+)
+
 // InitKubeClient creates K8s client from provided kubeconfig OR service account to interact with apiserver
 func InitKubeClient() {
 	kubeConfig, err := rest.InClusterConfig()
@@ -93,12 +98,16 @@ func InitKubeClient() {
 		if err != nil {
 			log.Fatalf("Unable to create Discovery Client")
 		}
+		botkubeConf.QPS = customQPS
+		botkubeConf.Burst = customBurst
 		DynamicKubeClient, err = dynamic.NewForConfig(botkubeConf)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		// Initiate discovery client for REST resource mapping
+		kubeConfig.QPS = customQPS
+		kubeConfig.Burst = customBurst
 		DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(kubeConfig)
 		if err != nil {
 			log.Fatal(err)

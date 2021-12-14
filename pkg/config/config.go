@@ -157,6 +157,7 @@ type ElasticSearch struct {
 	SkipTLSVerify bool       `yaml:"skipTLSVerify"`
 	AWSSigning    AWSSigning `yaml:"awsSigning"`
 	Index         Index
+	EventsSink    bool `yaml:"eventsSink"`
 }
 
 // AWSSigning contains AWS configurations
