@@ -72,6 +72,8 @@ var (
 	Mapper *restmapper.DeferredDiscoveryRESTMapper
 	// DiscoveryClient implements
 	DiscoveryClient discovery.DiscoveryInterface
+
+	Cache *Resources
 )
 
 const hyperlinkRegex = `(?m)<http:\/\/[a-z.0-9\/\-_=]*\|([a-z.0-9\/\-_=]*)>`
@@ -80,6 +82,10 @@ const (
 	customQPS   = 1e6
 	customBurst = 1e6
 )
+
+func init() {
+	Cache = &Resources{}
+}
 
 // InitKubeClient creates K8s client from provided kubeconfig OR service account to interact with apiserver
 func InitKubeClient() {

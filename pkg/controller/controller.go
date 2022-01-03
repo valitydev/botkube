@@ -101,7 +101,14 @@ func RegisterInformers(c *config.Config, notifiers []notify.Notifier) {
 				}
 			}
 			if c.Communications.ElasticSearch.EventsSink {
-				eventJSON, err := json.Marshal(notify.SinkEvent{Verb: "ADDED", Event: eventObj})
+				sEvent := notify.SinkEvent{Verb: "ADDED", Event: eventObj}
+				// Get involved object
+				rObj, ok := utils.Cache.Get(eventObj.InvolvedObject.UID)
+				if ok {
+					//log.Infof("Did not find any resource with ID %s", eventObj.InvolvedObject.UID)
+					sEvent.Object = rObj.Object
+				}
+				eventJSON, err := json.Marshal(sEvent)
 				if err != nil {
 					log.Error(err)
 					return
@@ -140,8 +147,16 @@ func RegisterInformers(c *config.Config, notifiers []notify.Notifier) {
 			if err != nil {
 				log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(new), reflect.TypeOf(eventObj))
 			}
+
 			if c.Communications.ElasticSearch.EventsSink {
-				eventJSON, err := json.Marshal(notify.SinkEvent{Verb: "UPDATED", Event: eventObj})
+				// Get involved object
+				sEvent := notify.SinkEvent{Verb: "UPDATED", Event: eventObj}
+				rObj, ok := utils.Cache.Get(eventObj.InvolvedObject.UID)
+				if ok {
+					//log.Infof("Did not find any resource with ID %s", eventObj.InvolvedObject.UID)
+					sEvent.Object = rObj.Object
+				}
+				eventJSON, err := json.Marshal(sEvent)
 				if err != nil {
 					log.Error(err)
 					return
@@ -192,7 +207,18 @@ func registerEventHandlers(c *config.Config, notifiers []notify.Notifier, resour
 	return handlerFns
 }
 
+func cacheEvent(obj interface{}) {
+	unstructuredObject, ok := obj.(*unstructured.Unstructured)
+	if !ok {
+		return
+	}
+	utils.Cache.Load(unstructuredObject.DeepCopy())
+}
+
 func sendEvent(obj, oldObj interface{}, c *config.Config, notifiers []notify.Notifier, resource string, eventType config.EventType) {
+	// Cache event
+	go cacheEvent(obj)
+
 	// Filter namespaces
 	objectMeta := utils.GetObjectMetaData(obj)
 

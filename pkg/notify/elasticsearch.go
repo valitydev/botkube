@@ -67,8 +67,9 @@ type ElasticSearch struct {
 }
 
 type SinkEvent struct {
-	Verb  string
-	Event corev1.Event
+	Verb   string
+	Event  corev1.Event
+	Object map[string]interface{}
 }
 
 // NewElasticSearch returns new ElasticSearch object
@@ -175,7 +176,7 @@ func (e *ElasticSearch) flushIndex(ctx context.Context, indexName string, event 
 	}
 
 	// Send event to els
-	fmt.Printf("%#v\n", event)
+	fmt.Printf("Sending event:: %+v\n", event)
 	_, err = e.ELSClient.Index().Index(indexName).Type(e.Type).BodyJson(event).Do(ctx)
 	if err != nil {
 		log.Error(fmt.Sprintf("Failed to post data to els. Error:%s", err.Error()))
@@ -207,10 +208,17 @@ func (e *ElasticSearch) SendMessage(msg string) error {
 	var sinkEvent SinkEvent
 	err := json.Unmarshal([]byte(msg), &sinkEvent)
 	if err != nil {
+		log.Error("Failed to unmarshal sink event", err)
 		return err
+	}
+	if sinkEvent.Object != nil {
+		// Remove managedFields since els doesn't accept it
+		meta := sinkEvent.Object["metadata"].(map[string]interface{})
+		meta["managedFields"] = nil
+		sinkEvent.Object["metadata"] = meta
 	}
 	// Construct the ELS Index Name with timestamp suffix for non BotKube Events
 	indexName := raw + "-" + e.Index + "-" + time.Now().Format(indexSuffixFormat)
-	// Create index if not exists
+	log.Infof("Sending event:: %s", js)
 	return e.flushIndex(ctx, indexName, sinkEvent)
 }

@@ -31,6 +31,7 @@ import (
 
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // Event to store required information from k8s objects
@@ -52,6 +53,7 @@ type Event struct {
 	Action    string
 	Skip      bool `json:",omitempty"`
 	Resource  string
+	UID       types.UID
 
 	Recommendations []string
 	Warnings        []string
@@ -78,6 +80,7 @@ func New(object interface{}, eventType config.EventType, resource, clusterName s
 		Name:      objectMeta.Name,
 		Namespace: objectMeta.Namespace,
 		Kind:      objectTypeMeta.Kind,
+		UID:       objectMeta.UID,
 		Level:     LevelMap[eventType],
 		Type:      eventType,
 		Cluster:   clusterName,
