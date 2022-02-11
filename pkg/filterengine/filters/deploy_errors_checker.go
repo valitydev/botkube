@@ -30,7 +30,7 @@ func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 	if err != nil {
 		log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(object), reflect.TypeOf(podObj))
 	}
-	event.Recommendations = append(event.Warnings, fmt.Sprintf(Message+KibanaUrlTemplate, podObj.Name))
+	event.Recommendations = append(event.Recommendations, fmt.Sprintf(Message+KibanaUrlTemplate, podObj.Name))
 }
 
 func (d DeployErrorsChecker) Describe() string {
