@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	Message           = "You can see your pod's errors in kibana:"
-	KibanaUrlTemplate = "https://kibana.empayre.com/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-60m,to:now))&_a=(columns:!('@severity',message,kubernetes.pod.name),filters:!(),index:filebeat-rbkmoney-processing,interval:auto,query:(language:kuery,query:'kubernetes.pod.name:%20%22%s%22'),sort:!())"
+	Message = "You can see your pod's errors in kibana:"
 )
 
 type DeployErrorsChecker struct {
@@ -25,12 +24,22 @@ func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 	if event.Kind != "Pod" || event.Type != config.ErrorEvent {
 		return
 	}
+	commConfig, confErr := config.NewCommunicationsConfig()
+	if confErr != nil {
+		log.Errorf("Error in loading configuration. %s", confErr.Error())
+		return
+	}
+	if commConfig == nil {
+		log.Errorf("Error in loading configuration.")
+		return
+	}
 	var podObj coreV1.Pod
 	err := utils.TransformIntoTypedObject(object.(*unstructured.Unstructured), &podObj)
 	if err != nil {
 		log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(object), reflect.TypeOf(podObj))
 	}
-	event.Recommendations = append(event.Recommendations, fmt.Sprintf(Message+KibanaUrlTemplate, podObj.Name))
+	searchUrlTemplate := commConfig.Communications.PodLogsDashboard.URL
+	event.Recommendations = append(event.Recommendations, fmt.Sprintf(Message+searchUrlTemplate, podObj.Name))
 }
 
 func (d DeployErrorsChecker) Describe() string {

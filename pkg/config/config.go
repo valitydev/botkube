@@ -132,12 +132,13 @@ type Namespaces struct {
 
 // CommunicationsConfig channels to send events to
 type CommunicationsConfig struct {
-	Slack         Slack
-	Mattermost    Mattermost
-	Discord       Discord
-	Webhook       Webhook
-	Teams         Teams
-	ElasticSearch ElasticSearch
+	Slack            Slack
+	Mattermost       Mattermost
+	Discord          Discord
+	Webhook          Webhook
+	Teams            Teams
+	ElasticSearch    ElasticSearch
+	PodLogsDashboard PodLogsDashboard
 }
 
 // Slack configuration to authentication and send notifications
@@ -209,6 +210,12 @@ type Discord struct {
 type Webhook struct {
 	Enabled bool
 	URL     string
+}
+
+// PodLogsDashboard configuration containing URL template with pod name mask
+//to fill and send if errors occurred
+type PodLogsDashboard struct {
+	URL string
 }
 
 // Kubectl configuration for executing commands inside cluster
