@@ -55,6 +55,7 @@ type Event struct {
 
 	Recommendations []string
 	Warnings        []string
+	LogsUrlMsg      string
 }
 
 // LevelMap is a map of event type to Level

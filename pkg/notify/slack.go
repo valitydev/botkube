@@ -22,14 +22,11 @@ package notify
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/infracloudio/botkube/pkg/config"
 	"github.com/infracloudio/botkube/pkg/events"
-	"github.com/infracloudio/botkube/pkg/filterengine/filters"
 	"github.com/infracloudio/botkube/pkg/log"
 	"github.com/nlopes/slack"
+	"strconv"
 )
 
 var attachmentColor = map[config.Level]string{
@@ -222,7 +219,6 @@ func slackShortNotification(event events.Event) slack.Attachment {
 // FormatShortMessage prepares message in short event format
 func FormatShortMessage(event events.Event) (msg string) {
 	additionalMsg := ""
-	logsUrlRec := ""
 	if len(event.Messages) > 0 {
 		for _, m := range event.Messages {
 			additionalMsg += fmt.Sprintf("%s\n", m)
@@ -231,11 +227,7 @@ func FormatShortMessage(event events.Event) (msg string) {
 	if len(event.Recommendations) > 0 {
 		recommend := ""
 		for _, m := range event.Recommendations {
-			if strings.Contains(m, filters.Message) {
-				logsUrlRec += fmt.Sprintf("%s\n", m)
-			} else {
-				recommend += fmt.Sprintf("- %s\n", m)
-			}
+			recommend += fmt.Sprintf("- %s\n", m)
 		}
 		additionalMsg += fmt.Sprintf("Recommendations:\n%s", recommend)
 	}
@@ -324,8 +316,8 @@ func FormatShortMessage(event events.Event) (msg string) {
 		}
 	}
 
-	if len(logsUrlRec) > 0 {
-		msg += fmt.Sprintf("\n%s", logsUrlRec)
+	if len(event.LogsUrlMsg) > 0 {
+		msg += fmt.Sprintf("\n%s", event.LogsUrlMsg)
 	}
 	// Add message in the attachment if there is any
 	if len(additionalMsg) > 0 {
