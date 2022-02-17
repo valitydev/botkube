@@ -55,3 +55,6 @@ communications:
   webhook:
     enabled: false
     url: 'WEBHOOK_URL'                        # e.g https://example.com:80
+
+  podLogsDashboard:
+    url: "KIBANA_URL"                         # url with '%s' to fill it with pod name, e.g.  https://kibana-url.com/?query:(language:kuery,query:'kubernetes.pod.name:%20%22%s%22')

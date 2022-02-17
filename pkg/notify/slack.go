@@ -22,12 +22,11 @@ package notify
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
-
 	"github.com/infracloudio/botkube/pkg/config"
 	"github.com/infracloudio/botkube/pkg/events"
 	"github.com/infracloudio/botkube/pkg/log"
 	"github.com/nlopes/slack"
+	"strconv"
 )
 
 var attachmentColor = map[config.Level]string{
@@ -317,6 +316,9 @@ func FormatShortMessage(event events.Event) (msg string) {
 		}
 	}
 
+	if len(event.LogsUrlMsg) > 0 {
+		msg += fmt.Sprintf("\n%s", event.LogsUrlMsg)
+	}
 	// Add message in the attachment if there is any
 	if len(additionalMsg) > 0 {
 		msg += fmt.Sprintf("```\n%s```", additionalMsg)
