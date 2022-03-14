@@ -32,23 +32,23 @@ release_snapshot() {
   export GORELEASER_CURRENT_TAG=latest
   goreleaser release --rm-dist --snapshot --skip-publish
   # Push images
-  docker push ghcr.io/infracloudio/botkube:latest-amd64
-  docker push ghcr.io/infracloudio/botkube:latest-arm64
-  docker push ghcr.io/infracloudio/botkube:latest-armv7
+  docker push ghcr.io/valitydev/botkube:latest-amd64
+  docker push ghcr.io/valitydev/botkube:latest-arm64
+  docker push ghcr.io/valitydev/botkube:latest-armv7
   # Create manifest
-  docker manifest create ghcr.io/infracloudio/botkube:latest \
-    --amend ghcr.io/infracloudio/botkube:latest-amd64 \
-    --amend ghcr.io/infracloudio/botkube:latest-arm64 \
-    --amend ghcr.io/infracloudio/botkube:latest-armv7
-  docker manifest push ghcr.io/infracloudio/botkube:latest
+  docker manifest create ghcr.io/valitydev/botkube:latest \
+    --amend ghcr.io/valitydev/botkube:latest-amd64 \
+    --amend ghcr.io/valitydev/botkube:latest-arm64 \
+    --amend ghcr.io/valitydev/botkube:latest-armv7
+  docker manifest push ghcr.io/valitydev/botkube:latest
 }
 
 build() {
   prepare
   docker run --rm --privileged \
-    -v $PWD:/go/src/github.com/infracloudio/botkube \
+    -v $PWD:/go/src/github.com/valitydev/botkube \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -w /go/src/github.com/infracloudio/botkube \
+    -w /go/src/github.com/valitydev/botkube \
     -e GORELEASER_CURRENT_TAG=latest \
     goreleaser/goreleaser release --rm-dist --snapshot --skip-publish
 }
