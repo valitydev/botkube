@@ -22,7 +22,7 @@ type DeployErrorsChecker struct {
 	Description string
 }
 
-// Register filter
+// Run filter and generate message
 func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 	if event.Kind != "Pod" || event.Type != config.ErrorEvent {
 		return
