@@ -317,7 +317,7 @@ func FormatShortMessage(event events.Event) (msg string) {
 	}
 
 	if len(event.LogsURLMsg) > 0 {
-		msg += fmt.Sprintf("%s", event.LogsURLMsg)
+		msg += fmt.Sprintf("\n%s", event.LogsURLMsg)
 	}
 	// Add message in the attachment if there is any
 	if len(additionalMsg) > 0 {
