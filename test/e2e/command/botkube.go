@@ -58,7 +58,8 @@ func (c *context) testBotkubeCommand(t *testing.T) {
 				"ObjectAnnotationChecker true    Checks if annotations botkube.io/* present in object specs and filters them.\n" +
 				"PodLabelChecker         true    Checks and adds recommendations if labels are missing in the pod specs.\n" +
 				"ImageTagChecker         true    Checks and adds recommendation if 'latest' image tag is used for container image.\n" +
-				"IngressValidator        true    Checks if services and tls secrets used in ingress specs are available.",
+				"IngressValidator        true    Checks if services and tls secrets used in ingress specs are available.\n" +
+				"DeployErrorsChecker     true    Checks if errors occurred while deployment and adds link to kibana for that pod.",
 		},
 		"BotKube commands list": {
 			command: "commands list",
