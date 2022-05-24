@@ -29,27 +29,27 @@ prepare() {
 
 release_snapshot() {
   prepare
-  export GORELEASER_CURRENT_TAG=latest
+  export GORELEASER_CURRENT_TAG=dev-vality
   goreleaser release --rm-dist --snapshot --skip-publish
   # Push images
-  docker push ghcr.io/infracloudio/botkube:latest-amd64
-  docker push ghcr.io/infracloudio/botkube:latest-arm64
-  docker push ghcr.io/infracloudio/botkube:latest-armv7
+  docker push ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-amd64
+  docker push ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-arm64
+  docker push ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-armv7
   # Create manifest
-  docker manifest create ghcr.io/infracloudio/botkube:latest \
-    --amend ghcr.io/infracloudio/botkube:latest-amd64 \
-    --amend ghcr.io/infracloudio/botkube:latest-arm64 \
-    --amend ghcr.io/infracloudio/botkube:latest-armv7
-  docker manifest push ghcr.io/infracloudio/botkube:latest
+  docker manifest create ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG} \
+    --amend ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-amd64 \
+    --amend ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-arm64 \
+    --amend ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-armv7
+  docker manifest push ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}
 }
 
 build() {
   prepare
   docker run --rm --privileged \
-    -v $PWD:/go/src/github.com/infracloudio/botkube \
+    -v $PWD:/go/src/github.com/valitydev/botkube \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -w /go/src/github.com/infracloudio/botkube \
-    -e GORELEASER_CURRENT_TAG=latest \
+    -w /go/src/github.com/valitydev/botkube \
+    -e GORELEASER_CURRENT_TAG=dev-vality \
     goreleaser/goreleaser release --rm-dist --snapshot --skip-publish
 }
 
@@ -69,7 +69,7 @@ usage() {
 Usage: ${0} [build|release|release_snapshot]
 Where,
   build: Builds project with goreleaser without pushing images.
-  release_snapshot: Builds project without publishing release. It builds and pushes BotKube image with latest image tag.
+  release_snapshot: Builds project without publishing release. It builds and pushes BotKube image with v9.99.9-dev image tag.
   release: Makes and published release to GitHub
 EOM
     exit 1

@@ -13,13 +13,16 @@ import (
 )
 
 const (
+	//Message string representing message template
 	Message = "You can see your pod's errors in kibana:"
 )
 
+// DeployErrorsChecker checks if some errors occurred during deployment
 type DeployErrorsChecker struct {
 	Description string
 }
 
+// Run filter and generate message
 func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 	if event.Kind != "Pod" || event.Type != config.ErrorEvent {
 		return
@@ -38,10 +41,11 @@ func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 	if err != nil {
 		log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(object), reflect.TypeOf(podObj))
 	}
-	searchUrlTemplate := commConfig.Communications.PodLogsDashboard.URL
-	event.LogsUrlMsg = fmt.Sprintf(Message+"[LOGS URL]("+searchUrlTemplate+")", podObj.Name)
+	searchURLTemplate := commConfig.Communications.PodLogsDashboard.URL
+	event.LogsURLMsg = fmt.Sprintf(Message+"[LOGS URL]("+searchURLTemplate+")", podObj.Name)
 }
 
+// Describe filter
 func (d DeployErrorsChecker) Describe() string {
 	return d.Description
 }

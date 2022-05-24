@@ -9,11 +9,11 @@ extraAnnotations: {}
 priorityClassName: ""
 image:
   registry: ghcr.io
-  repository: infracloudio/botkube
+  repository: valitydev/botkube
   pullPolicy: IfNotPresent
   ## default tag is appVersion from Chart.yaml. If you want to use
   ## some other tag then it can be specified here
-  tag: v0.12.4
+  tag: dev-vality
 
 nameOverride: ""
 fullnameOverride: ""

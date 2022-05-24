@@ -30,26 +30,10 @@ jobs:
       uses: goreleaser/goreleaser-action@v2
       with:
         install-only: true
-        # Newer goreleaser version doesn't allow builds with "latest" tag
-        version: v0.179.0
+        version: latest
     - name: Run GoReleaser
       run: make release-snapshot
     - name: Install Helm
       uses: azure/setup-helm@v1
       with:
         version: v3.4.0
-    - name: Update and publish helm chart
-      run: |
-        cd ..
-        git config --global user.email "botkube-ci@infracloud.io"
-        git config --global user.name "BotKube CI"
-        git clone https://github.com/infracloudio/charts.git
-        cd charts
-        git fetch
-        git branch
-        git pull origin gh-pages
-        helm package --app-version v9.99.9-dev --version v9.99.9-dev ${{ github.workspace }}/helm/botkube/
-        helm repo index --url https://infracloudio.github.io/charts --merge index.yaml .
-        git add .
-        git commit -m "Update BotKube latest helm chart"
-        git push https://${{ secrets.GH_TOKEN }}@github.com/infracloudio/charts.git

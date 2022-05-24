@@ -55,7 +55,7 @@ type Event struct {
 
 	Recommendations []string
 	Warnings        []string
-	LogsUrlMsg      string
+	LogsURLMsg      string
 }
 
 // LevelMap is a map of event type to Level
@@ -124,6 +124,11 @@ func New(object interface{}, eventType config.EventType, resource, clusterName s
 		event.Count = eventObj.Count
 		event.Action = eventObj.Action
 		event.TimeStamp = eventObj.LastTimestamp.Time
+		// Compatible with events.k8s.io/v1
+		if eventObj.LastTimestamp.IsZero() {
+			event.TimeStamp = eventObj.Series.LastObservedTime.Time
+			event.Count = eventObj.Series.Count
+		}
 	}
 	return event
 }
