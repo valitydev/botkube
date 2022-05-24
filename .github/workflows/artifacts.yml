@@ -25,7 +25,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.github-token }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Install GoReleaser
       uses: goreleaser/goreleaser-action@v2
       with:
