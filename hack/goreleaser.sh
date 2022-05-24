@@ -29,7 +29,7 @@ prepare() {
 
 release_snapshot() {
   prepare
-  export GORELEASER_CURRENT_TAG=dev-vality
+  export GORELEASER_CURRENT_TAG=v9.99.9-dev-vality
   goreleaser release --rm-dist --snapshot --skip-publish
   # Push images
   docker push ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-amd64
@@ -49,7 +49,7 @@ build() {
     -v $PWD:/go/src/github.com/valitydev/botkube \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -w /go/src/github.com/valitydev/botkube \
-    -e GORELEASER_CURRENT_TAG=dev-vality \
+    -e GORELEASER_CURRENT_TAG=v9.99.9-dev-vality \
     goreleaser/goreleaser release --rm-dist --snapshot --skip-publish
 }
 
