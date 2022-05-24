@@ -50,7 +50,7 @@ gorelease:
 	@echo "Publishing release with goreleaser"
 	@./hack/goreleaser.sh release
 
-# Build project and push dev images with v9.99.9-dev tag ("dev-vality" for fork)
+# Build project and push dev images with v9.99.9-dev tag (with "vality" postfix for fork)
 release-snapshot:
 	@./hack/goreleaser.sh release_snapshot
 
