@@ -42,7 +42,7 @@ func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 		log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(object), reflect.TypeOf(podObj))
 	}
 	searchURLTemplate := commConfig.Communications.PodLogsDashboard.URL
-	event.LogsURLMsg = fmt.Sprintf(Message+"[LOGS URL]("+searchURLTemplate+")", podObj.Name)
+	event.LogsURLMsg = fmt.Sprintf(Message+"[LOGS URL]("+searchURLTemplate+")", podObj.Name, podObj.Name)
 }
 
 // Describe filter
