@@ -14,7 +14,7 @@ import (
 
 const (
 	//Message string representing message template
-	Message = "You can see your pod's errors in kibana:"
+	Message = "You can see your pod's errors in OpenSearch: "
 )
 
 // DeployErrorsChecker checks if some errors occurred during deployment
