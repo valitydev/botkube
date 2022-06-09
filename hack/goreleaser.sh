@@ -29,7 +29,7 @@ prepare() {
 
 release_snapshot() {
   prepare
-  export GORELEASER_CURRENT_TAG=v9.99.9-dev-vality
+  export GORELEASER_CURRENT_TAG=v9.99.10-dev-vality
   goreleaser release --rm-dist --snapshot --skip-publish
   # Push images
   docker push ghcr.io/valitydev/botkube:${GORELEASER_CURRENT_TAG}-amd64
@@ -49,7 +49,7 @@ build() {
     -v $PWD:/go/src/github.com/valitydev/botkube \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -w /go/src/github.com/valitydev/botkube \
-    -e GORELEASER_CURRENT_TAG=v9.99.9-dev-vality \
+    -e GORELEASER_CURRENT_TAG=v9.99.10-dev-vality \
     goreleaser/goreleaser release --rm-dist --snapshot --skip-publish
 }
 
@@ -69,7 +69,7 @@ usage() {
 Usage: ${0} [build|release|release_snapshot]
 Where,
   build: Builds project with goreleaser without pushing images.
-  release_snapshot: Builds project without publishing release. It builds and pushes BotKube image with v9.99.9-dev image tag.
+  release_snapshot: Builds project without publishing release. It builds and pushes BotKube image with specified image tag.
   release: Makes and published release to GitHub
 EOM
     exit 1
