@@ -38,11 +38,17 @@ func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 	}
 	var podObj coreV1.Pod
 	err := utils.TransformIntoTypedObject(object.(*unstructured.Unstructured), &podObj)
+	podObjectMeta := utils.GetObjectMetaData(object)
 	if err != nil {
 		log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(object), reflect.TypeOf(podObj))
 	}
 	searchURLTemplate := commConfig.Communications.PodLogsDashboard.URL
-	event.LogsURLMsg = fmt.Sprintf(Message+"[LOGS URL]("+searchURLTemplate+")", podObj.Name, podObj.Name)
+	log.Info("Check pod name")
+	log.Infof("podObj.GetName(): %s", podObj.GetName())
+	log.Infof("podObj.Name: %s", podObj.Name)
+	log.Infof("podObjectMeta.Name: %s", podObjectMeta.Name)
+	podName := podObj.GetName()
+	event.LogsURLMsg = fmt.Sprintf(Message+"[LOGS URL]("+searchURLTemplate+")", podName, podName)
 }
 
 // Describe filter
