@@ -6,10 +6,6 @@ import (
 	"github.com/infracloudio/botkube/pkg/events"
 	"github.com/infracloudio/botkube/pkg/filterengine"
 	"github.com/infracloudio/botkube/pkg/log"
-	"github.com/infracloudio/botkube/pkg/utils"
-	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"reflect"
 )
 
 const (
@@ -36,18 +32,8 @@ func (d DeployErrorsChecker) Run(object interface{}, event *events.Event) {
 		log.Errorf("Error in loading configuration.")
 		return
 	}
-	var podObj coreV1.Pod
-	err := utils.TransformIntoTypedObject(object.(*unstructured.Unstructured), &podObj)
-	podObjectMeta := utils.GetObjectMetaData(object)
-	if err != nil {
-		log.Errorf("Unable to transform object type: %v, into type: %v", reflect.TypeOf(object), reflect.TypeOf(podObj))
-	}
 	searchURLTemplate := commConfig.Communications.PodLogsDashboard.URL
-	log.Info("Check pod name")
-	log.Infof("podObj.GetName(): %s", podObj.GetName())
-	log.Infof("podObj.Name: %s", podObj.Name)
-	log.Infof("podObjectMeta.Name: %s", podObjectMeta.Name)
-	podName := podObj.GetName()
+	podName := event.Name
 	event.LogsURLMsg = fmt.Sprintf(Message+"[LOGS URL]("+searchURLTemplate+")", podName, podName)
 }
 
